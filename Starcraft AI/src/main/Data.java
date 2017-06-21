@@ -18,11 +18,14 @@ import bwta.BaseLocation;
 public class Data {
 	public List<TilePosition> enemyBase = new ArrayList<>(),enemyStructure = new ArrayList<>();
 	public List<String> enemyStructureName = new ArrayList<>();
+	public List<Unit> leadingOverlord = new ArrayList<>();
 	public double checkSupplyCoefficent = 0.10;
 	public Position forceRallyPoint;
-	public int attackArmy = 60;
+	public int attackArmy = 70;
 	public int stopTrainWorker = 50;
 	public int scountAtSupply = 4;
+	public int gridWidth = 400,gridHeight = 300;
+	public boolean needMorePylon = false;
 	public boolean sentScount = false;
 	public double stimHealthPercent = 1.0;
 	public UnitType workerType,baseType,gasType; 
@@ -40,12 +43,13 @@ public class Data {
 	public Set<UnitType> armyType = new HashSet<>();
 	public Set<UnitType> trainArmyBuilding = new HashSet<>();
 	public Set<UnitType> invisibleType = new HashSet<>();
-	public int retreatDistance = 100;
+	public int retreatDistance = 70;
 	public double retreatHealthPercent = 0.5;
 	public int retreatLeastHealth = 30;
-	public Set<Integer> visitedRegion = new HashSet<>(),visitedPylon = new HashSet<>(),visitedHatchery;
-	public Region regionsTrainBuilding,regionsOtherBuilding;
-	public Queue<Region> backUpRegion = new LinkedList<>();
+	public Set<Integer> visitedGrid = new HashSet<>(),visitedPylon = new HashSet<>(),visitedHatchery;
+	public Queue<Grid> regions = new LinkedList<>();
+	public Grid trainGrid,researchGrid;
+	public Queue<Grid> backUpGrid = new LinkedList<>();
 	public List<BaseLocation> baseLocations = new ArrayList<>();
 	//special agent is for do some shift operation,wait the agent have done what I command and then do the next
 	public Map<Integer,Unit> specialAgent = new HashMap<>();
@@ -59,6 +63,7 @@ public class Data {
 			invisibleType.add(u);
 		}
 	}
+	public Grid[][] grids;
 //    public Set<Integer> onDuty = new HashSet<>();
 //    public boolean isBuildingSupply = false;
 //    public boolean isBuildingBarrak = false;

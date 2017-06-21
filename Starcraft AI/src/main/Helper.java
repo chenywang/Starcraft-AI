@@ -1,4 +1,5 @@
 package main;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class Helper {
 		this.self = self;
 		this.data = tags;
 	}
+	//build at specific position
 	public boolean build(UnitType buildType,Unit builder,Position pos){
 		if(buildType.mineralPrice() > self.minerals() || buildType.gasPrice() > self.gas()
 				|| builder == null) return false;
@@ -38,7 +40,10 @@ public class Helper {
 		if(buildType.mineralPrice() > self.minerals() || buildType.gasPrice() > self.gas()
 				|| builder == null) return false;
 		TilePosition buildTile = getBuildTile(builder,buildType);
-		if(buildTile == null) return false;
+		if(buildTile == null){
+			System.out.println(buildType + " build tile is null");
+			return false;
+		}
 		builder.move(buildTile.toPosition());
 		data.specialAgent.put(builder.getID(), builder);
 		data.specialAgentBuildType.put(builder.getID(),buildType);
@@ -63,9 +68,7 @@ public class Helper {
 			return getBuildTileTerran(builder,buildingType);
 		}else if(data.baseType == UnitType.Zerg_Hatchery){
 			return getBuildTileZerg(builder,buildingType);
-		}else{
-			return getBuildTileZerg(builder,buildingType);
-		}
+		}else return null;
 	}
 	public TilePosition getBuildTileZerg(Unit builder,UnitType buildingType) {
 		if(buildingType == UnitType.Zerg_Hatchery) return findNormalTileForBuild(builder,buildingType);
@@ -91,8 +94,10 @@ public class Helper {
 	}
 	public TilePosition getBuildTileProtoss(Unit builder,UnitType buildingType) {
 		if(buildingType == UnitType.Protoss_Pylon) return findNormalTileForBuild(builder,buildingType);
+		boolean find = false;
 		for(Unit pylon : data.myUnits.get(UnitType.Protoss_Pylon).values()){
 			if(data.visitedPylon.contains(pylon.getID())) continue;
+			find = true;
 			int width = 500,height = 320,searchDistance = 50;
 			for(int x = pylon.getPosition().getX() - width/2;x <  pylon.getPosition().getX() + width/2;x += searchDistance){
 				for(int y = pylon.getPosition().getY() - height/2;y < pylon.getPosition().getY() + height/2;y += searchDistance){
@@ -105,6 +110,7 @@ public class Helper {
 			}
 			data.visitedPylon.add(pylon.getID());
 		}
+		if(!find) data.needMorePylon = true;
 		return null;
 		
 	}
@@ -112,40 +118,34 @@ public class Helper {
 		return findNormalTileForBuild(builder,buildingType);
 	}
 	public TilePosition findNormalTileForBuild(Unit builder,UnitType buildingType){
-		Region region = data.trainArmyBuilding.contains(buildingType) ? data.regionsTrainBuilding : data.regionsOtherBuilding;
+		Grid grid = data.trainArmyBuilding.contains(buildingType) ? data.trainGrid : data.researchGrid;
+		int[] direction = new int[]{0,-1,0,1,0};
 		while(true){
-			int x = region.getBoundsLeft(),y = region.getBoundsTop();
 			int height = 40,
 				width = 30;
-			while(region.getBoundsBottom() > y){
-				while(region.getBoundsRight() > x){
+			for(int x = grid.leftTop.getX();x < grid.rightBot.getX();x += width){
+				for(int y = grid.leftTop.getY();y < grid.rightBot.getY();y += height){
 					Position pos = new Position(x, y);
 					if(game.canBuildHere(pos.toTilePosition(),buildingType,builder,false)
 							&& !blockResource(pos,buildingType)){
 						return pos.toTilePosition();
 					}
-					x += width;
-				}
-				x = region.getBoundsLeft();
-				y += height;
-			}
-			for(Region neighbor : region.getNeighbors()){
-				if(data.visitedRegion.add(neighbor.getID())){
-					data.backUpRegion.offer(neighbor);
 				}
 			}
-			if(data.backUpRegion.size() == 0){
-				System.out.println("ur queue is empty nows");
-				System.out.println("we add region " + game.getAllRegions().size());
-				for(Region re : game.getAllRegions())
-					data.backUpRegion.offer(re);
+			for(int i = 0;i < 4;i++){
+				int next_x = grid.id / data.grids[0].length + direction[i],next_y = grid.id % data.grids[0].length + direction[i + 1];
+				if(next_x < 0 || next_y < 0 || next_x == data.grids.length || next_y == data.grids[0].length) continue;
+				if(data.visitedGrid.add(data.grids[next_x][next_y].id)){
+					data.backUpGrid.add(data.grids[next_x][next_y]);
+				}
 			}
-			region = data.backUpRegion.poll();
+			grid = data.backUpGrid.poll();
 			if(data.trainArmyBuilding.contains(buildingType))
-				data.regionsTrainBuilding = region;
+				data.trainGrid = grid;
 			else
-				data.regionsOtherBuilding = region;
+				data.researchGrid = grid;
 		}
+		
 	}
 	public boolean blockResource(Position p,UnitType buildingType){
 		List<BaseLocation> list = BWTA.getBaseLocations();
@@ -329,5 +329,22 @@ public class Helper {
 			}
 		}
 		return larvas;
+	}
+	public void setGrid(){
+		int width = game.mapWidth() * 32,height = game.mapHeight() * 32;
+		int gridWidth = data.gridWidth,gridHeight = data.gridHeight;
+		data.grids = new main.Grid[height/gridHeight + (height % gridHeight == 0 ? 0 : 1)][width/gridWidth + (width % gridWidth == 0 ? 0 : 1)];
+		for(int i = 0;i < width;i += gridWidth){
+			for(int j = 0;j < height;j += gridHeight){
+				Position leftTop = new Position(i,j);
+				Position rightBot = new Position((i +  gridWidth) < width ? i + gridWidth : width,
+											(j + gridHeight) < height ? j + gridHeight : height);
+				int id = (j / gridHeight) * data.grids[0].length + i / gridWidth;
+				data.grids[j / gridHeight][i / gridWidth] = new main.Grid(leftTop, rightBot,id);
+			}
+		}
+	}
+	public Grid getGrid(Position p){
+		return data.grids[p.getY() / data.gridHeight][p.getX() / data.gridWidth];
 	}
 }

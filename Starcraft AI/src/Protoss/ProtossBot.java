@@ -272,6 +272,15 @@ public class ProtossBot extends Bot {
         	if(data.myUnits.get(UnitType.Protoss_Archon).size() < 3){
         	}
         }
+        //need more pylon to build basic structure
+//        if(data.frame % data.threeHundredChecker == 0 && data.needMorePylon){
+//        	System.out.println("build more pylon");
+//        	Unit builder = helper.grabOneUnit(data.workersGatherMineral);
+//        	if(builder != null){
+//        		helper.build(UnitType.Protoss_Pylon, builder);
+//        	}
+//        	data.needMorePylon = false;
+//        }
     }
 
 

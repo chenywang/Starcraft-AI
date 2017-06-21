@@ -23,7 +23,7 @@ public class Debug {
 	}
 	public void DrawTextAndShape(){
 //		game.drawTextScreen(10, 10, "fps:" + game.getFPS());
-		 game.drawTextScreen(10, 10, "worker:" + helper.workerSupply() + " army:" + helper.armySupply());
+//		 game.drawTextScreen(10, 10, "worker:" + helper.workerSupply() + " army:" + helper.armySupply());
 //	        for(Unit u : data.myUnits.get(data.workerType).values()){
 //	        	if(u.isMorphing()) game.drawTextMap(u.getPosition(), "morphing");
 //	        	else game.drawTextMap(u.getPosition(), "workers");
@@ -34,6 +34,11 @@ public class Debug {
 //	        		game.drawTextMap(u.getPosition(), u.getType().toString());
 //	        	}
 //	        }
+		 	for(Map<Integer,Unit> map : data.underConstructing.values()){
+	        	for(Unit u : map.values()){
+	        		game.drawTextMap(u.getPosition(), u.getType().toString());
+	        	}
+	        }
 //	        if(data.scouter != null && data.myUnits.get(UnitType.Terran_SCV).containsKey(data.scouter.getID())){
 //	    		game.drawTextMap(data.scouter.getPosition(), "scouter" );
 //	        }
@@ -85,6 +90,15 @@ public class Debug {
 	        	game.drawTextMap(data.enemyStructure.get(i).toPosition(), data.enemyStructureName.get(i));
 	        	game.drawCircleMap(data.enemyStructure.get(i).toPosition(), 30, Color.Red);
 	        }
+	        //draw all grid
+//	        for(int i = 0;i < data.grids.length;i++){
+//	        	for(int j = 0;j < data.grids[0].length;j++){
+//	        		game.drawBoxMap(data.grids[i][j].leftTop, data.grids[i][j].rightBot, Color.Orange);
+//	        		game.drawTextMap(data.grids[i][j].mid, "["+i+","+j+"]");
+//	        	}
+//	        }
+	        game.drawBoxMap(data.trainGrid.leftTop, data.trainGrid.rightBot, Color.Orange);
+	        game.drawBoxMap(data.researchGrid.leftTop, data.researchGrid.rightBot, Color.Yellow);
 //	        for(Unit u : data.myUnits.get(UnitType.Protoss_Pylon).values()){
 //	        	int width = 500,height = 320;
 //	        	game.drawBoxMap(new Position(u.getX() - width/2,u.getY() - height/2), new Position(u.getX() + width/2,u.getY() + height/2), 

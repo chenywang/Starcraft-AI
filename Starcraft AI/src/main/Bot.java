@@ -51,15 +51,9 @@ public class Bot extends DefaultBWListener{
         game.sendText("the gathering");
 //        data.forceRallyPoint = BWTA.getNearestChokepoint(self.getStartLocation()).getPoint();
         data.forceRallyPoint = BWTA.getNearestBaseLocation(self.getStartLocation().toPosition()).getPosition();
-        data.regionsTrainBuilding = game.getRegionAt(self.getStartLocation().toPosition());
-        data.regionsOtherBuilding = game.getRegionAt(self.getStartLocation().toPosition());
-        data.visitedRegion.add(data.regionsTrainBuilding.getID());
         for(BaseLocation baseLocation : BWTA.getBaseLocations()){
         	if(!baseLocation.getTilePosition().toString().equals(self.getStartLocation().toString()))
         		data.baseLocations.add(baseLocation);
-        }
-        for(Chokepoint cp : BWTA.getChokepoints()){
-        	data.visitedRegion.add(game.getRegionAt(cp.getCenter()).getID());
         }
         Collections.sort(data.baseLocations,new Comparator<BaseLocation>(){
         	public int compare(BaseLocation b1,BaseLocation b2){
@@ -70,6 +64,11 @@ public class Bot extends DefaultBWListener{
         for(Player player : game.enemies()){
         	data.opponents.add(player.getID());
         }
+        helper.setGrid();
+        Grid grid = helper.getGrid(self.getStartLocation().toPosition());
+        data.trainGrid = grid;
+        data.researchGrid = grid;
+        data.visitedGrid.add(grid.id);
 	}
 	@Override
 	public void onUnitCreate(Unit unit) {
